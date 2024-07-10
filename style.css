@@ -11,3 +11,7 @@ body {
 #visualization {
     margin: 0 auto;
 }
+
+button {
+    margin: 10px;
+}
