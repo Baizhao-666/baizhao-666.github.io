@@ -1,0 +1,13 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.annotation {
+    font-size: 14px;
+    fill: #333;
+}
+
+#visualization {
+    margin: 0 auto;
+}
