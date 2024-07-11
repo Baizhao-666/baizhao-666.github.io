@@ -29,7 +29,7 @@
         let data;
 
         // Load the CSV data
-        d3.csv("https://github.com/Baizhao-666/baizhao-666.github.io/blob/main/data/owid-covid-data.csv?raw=true").then(loadedData => {
+        d3.csv("https://raw.githubusercontent.com/Baizhao-666/baizhao-666.github.io/blob/main/data/owid-covid-data.csv").then(loadedData => {
             data = loadedData;
             processData();
             showScene(currentScene);
