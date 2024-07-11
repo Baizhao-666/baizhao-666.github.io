@@ -7,39 +7,59 @@ const svg = d3.select("#visualization")
     .attr("height", height);
 
 const scenes = [
-    { id: "scene1", title: "Introduction", description: "Overview of Car Sales Data", render: renderScene1 },
-    { id: "scene2", title: "Main Content", description: "Best-Selling Car Models", render: renderScene2 },
-    { id: "scene3", title: "Conclusion", description: "Summary of Findings", render: renderScene3 }
+    { id: "scene1", title: "Total Cases", description: "Overview of Total COVID-19 Cases", render: renderScene1 },
+    { id: "scene2", title: "Total Deaths", description: "Overview of Total COVID-19 Deaths", render: renderScene2 },
+    { id: "scene3", title: "Total Vaccinations", description: "Overview of Total COVID-19 Vaccinations", render: renderScene3 }
 ];
+
+let data;
+
+// Load the CSV data
+d3.csv("/mnt/data/owid-covid-data.csv").then(loadedData => {
+    data = loadedData;
+    processData();
+    showScene(currentScene);
+});
+
+function processData() {
+    data.forEach(d => {
+        d.total_cases = +d.total_cases;
+        d.total_deaths = +d.total_deaths;
+        d.total_vaccinations = +d.total_vaccinations;
+    });
+}
 
 function renderScene1() {
     svg.selectAll("*").remove();
+    const totalCases = d3.sum(data, d => d.total_cases);
     svg.append("text")
        .attr("x", width / 2)
        .attr("y", height / 2)
        .attr("text-anchor", "middle")
-       .text("Introduction: Overview of Car Sales Data");
-    createAnnotation(100, 100, "Total cars sold: 500,000");
+       .text(`Total COVID-19 Cases: ${totalCases}`);
+    createAnnotation(100, 100, `Total cases: ${totalCases}`);
 }
 
 function renderScene2() {
     svg.selectAll("*").remove();
+    const totalDeaths = d3.sum(data, d => d.total_deaths);
     svg.append("text")
        .attr("x", width / 2)
        .attr("y", height / 2)
        .attr("text-anchor", "middle")
-       .text("Main Content: Best-Selling Car Models");
-    createAnnotation(100, 100, "Top model: Model X with 50,000 sales");
+       .text(`Total COVID-19 Deaths: ${totalDeaths}`);
+    createAnnotation(100, 100, `Total deaths: ${totalDeaths}`);
 }
 
 function renderScene3() {
     svg.selectAll("*").remove();
+    const totalVaccinations = d3.sum(data, d => d.total_vaccinations);
     svg.append("text")
        .attr("x", width / 2)
        .attr("y", height / 2)
        .attr("text-anchor", "middle")
-       .text("Conclusion: Summary of Findings");
-    createAnnotation(100, 100, "Explore more details about car sales.");
+       .text(`Total COVID-19 Vaccinations: ${totalVaccinations}`);
+    createAnnotation(100, 100, `Total vaccinations: ${totalVaccinations}`);
 }
 
 function createAnnotation(x, y, text) {
@@ -67,5 +87,3 @@ function updateNavigation() {
 
 document.getElementById("nextButton").addEventListener("click", () => showScene(currentScene + 1));
 document.getElementById("prevButton").addEventListener("click", () => showScene(currentScene - 1));
-
-showScene(currentScene);
