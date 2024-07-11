@@ -15,7 +15,7 @@ const scenes = [
 let data;
 
 // Load the CSV data
-d3.csv("https://github.com/Baizhao-666/baizhao-666.github.io/blob/504f94bc21943155c3c4435ce520091b69f12991/data/owid-covid-data.csv").then(loadedData => {
+d3.csv("https://github.com/Baizhao-666/baizhao-666.github.io/blob/main/data/owid-covid-data.csv").then(loadedData => {
     data = loadedData;
     processData();
     showScene(currentScene);
