@@ -23,72 +23,141 @@
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
         
-        const x = d3.scaleTime().range([0, width - margin.left - margin.right]);
-        const y = d3.scaleLinear().range([height - margin.top - margin.bottom, 0]);
-        
         const scenes = [
-            { id: "scene1", title: "Total Cases", description: "Overview of Total COVID-19 Cases", metric: "total_cases", render: renderScene },
-            { id: "scene2", title: "Total Deaths", description: "Overview of Total COVID-19 Deaths", metric: "total_deaths", render: renderScene },
-            { id: "scene3", title: "Total Vaccinations", description: "Overview of Total COVID-19 Vaccinations", metric: "total_vaccinations", render: renderScene }
+            { id: "scene1", title: "Top 10 Countries with Nobel Prize Winners", render: renderScene1 },
+            { id: "scene2", title: "Nobel Prize Winners Per Year (1901-2019)", render: renderScene2 },
+            { id: "scene3", title: "Categories of Nobel Prize", render: renderScene3 }
         ];
         
         let data;
         
-        // Load the CSV data from GitHub
-        d3.csv("https://raw.githubusercontent.com/Baizhao-666/baizhao-666.github.io/main/data/owid-covid-data.csv").then(loadedData => {
+        d3.csv("https://raw.githubusercontent.com/yourusername/narrative-visualization/main/nobel_final.csv").then(loadedData => {
             data = loadedData;
             processData();
             showScene(currentScene);
         });
         
         function processData() {
-            data.forEach(d => {
-                d.date = new Date(d.date);
-                d.total_cases = +d.total_cases;
-                d.total_deaths = +d.total_deaths;
-                d.total_vaccinations = +d.total_vaccinations;
-            });
+            // Data processing logic will be implemented inside each scene's render function
         }
         
-        function renderScene(scene) {
+        function renderScene1() {
             svg.selectAll("*").remove();
+            const countryCount = d3.rollup(data, v => v.length, d => d.birth_country)
+                .entries().sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
         
-            x.domain(d3.extent(data, d => d.date));
-            y.domain([0, d3.max(data, d => d[scene.metric])]);
+            const x = d3.scaleBand()
+                .range([0, width - margin.left - margin.right])
+                .padding(0.1)
+                .domain(countryCount.map(d => d[0]));
+        
+            const y = d3.scaleLinear()
+                .range([height - margin.top - margin.bottom, 0])
+                .domain([0, d3.max(countryCount, d => d[1])]);
         
             svg.append("g")
-                .attr("class", "x axis")
                 .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
                 .call(d3.axisBottom(x));
         
             svg.append("g")
-                .attr("class", "y axis")
                 .call(d3.axisLeft(y));
         
-            svg.selectAll(".dot")
-                .data(data)
-                .enter().append("circle")
-                .attr("class", "dot")
-                .attr("cx", d => x(d.date))
-                .attr("cy", d => y(d[scene.metric]))
-                .attr("r", 3);
+            const bars = svg.selectAll(".bar")
+                .data(countryCount)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d[0]))
+                .attr("y", d => y(d[1]))
+                .attr("width", x.bandwidth())
+                .attr("height", d => height - margin.top - margin.bottom - y(d[1]));
+        
+            bars.append("title")
+                .text(d => `${d[0]}: ${d[1]}`);
         
             svg.append("text")
                 .attr("x", (width - margin.left - margin.right) / 2)
                 .attr("y", -10)
                 .attr("text-anchor", "middle")
                 .style("font-size", "16px")
-                .text(scene.title);
-        
-            createAnnotation(100, 50, scene.description);
+                .text("Top 10 Countries with Nobel Prize Winners");
         }
         
-        function createAnnotation(x, y, text) {
+        function renderScene2() {
+            svg.selectAll("*").remove();
+            const yearCount = d3.rollup(data, v => v.length, d => d.year)
+                .entries().sort((a, b) => a[0] - b[0]);
+        
+            const x = d3.scaleBand()
+                .range([0, width - margin.left - margin.right])
+                .padding(0.1)
+                .domain(yearCount.map(d => d[0]));
+        
+            const y = d3.scaleLinear()
+                .range([height - margin.top - margin.bottom, 0])
+                .domain([0, d3.max(yearCount, d => d[1])]);
+        
+            svg.append("g")
+                .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
+                .call(d3.axisBottom(x).tickValues(x.domain().filter((d, i) => !(i % 10))));
+        
+            svg.append("g")
+                .call(d3.axisLeft(y));
+        
+            const bars = svg.selectAll(".bar")
+                .data(yearCount)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d[0]))
+                .attr("y", d => y(d[1]))
+                .attr("width", x.bandwidth())
+                .attr("height", d => height - margin.top - margin.bottom - y(d[1]));
+        
+            bars.append("title")
+                .text(d => `${d[0]}: ${d[1]}`);
+        
             svg.append("text")
-                .attr("x", x)
-                .attr("y", y)
-                .text(text)
-                .attr("class", "annotation");
+                .attr("x", (width - margin.left - margin.right) / 2)
+                .attr("y", -10)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .text("Nobel Prize Winners Per Year (1901-2019)");
+        }
+        
+        function renderScene3() {
+            svg.selectAll("*").remove();
+            const categoryCount = d3.rollup(data, v => v.length, d => d.category)
+                .entries();
+        
+            const radius = Math.min(width, height) / 2 - margin.top;
+            const pie = d3.pie().value(d => d[1]);
+            const arc = d3.arc().innerRadius(0).outerRadius(radius);
+        
+            svg.attr("transform", `translate(${width / 2},${height / 2})`);
+        
+            const arcs = svg.selectAll(".arc")
+                .data(pie(categoryCount))
+                .enter().append("g")
+                .attr("class", "arc");
+        
+            arcs.append("path")
+                .attr("d", arc)
+                .attr("fill", d => d3.schemeCategory10[d.index % 10]);
+        
+            arcs.append("title")
+                .text(d => `${d.data[0]}: ${d.data[1]}`);
+        
+            arcs.append("text")
+                .attr("transform", d => `translate(${arc.centroid(d)})`)
+                .attr("text-anchor", "middle")
+                .text(d => d.data[0]);
+        
+            svg.append("text")
+                .attr("x", 0)
+                .attr("y", -height / 2 + margin.top)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .text("Categories of Nobel Prize");
         }
         
         let currentScene = 0;
@@ -96,7 +165,7 @@
         function showScene(index) {
             if (index >= 0 && index < scenes.length) {
                 currentScene = index;
-                scenes[currentScene].render(scenes[currentScene]);
+                scenes[currentScene].render();
                 updateNavigation();
             }
         }
@@ -108,6 +177,7 @@
         
         document.getElementById("nextButton").addEventListener("click", () => showScene(currentScene + 1));
         document.getElementById("prevButton").addEventListener("click", () => showScene(currentScene - 1));
+
 
     </script>
 </body>
