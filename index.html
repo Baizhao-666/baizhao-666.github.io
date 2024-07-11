@@ -41,8 +41,11 @@
             // Data processing logic will be implemented inside each scene's render function
         }
         
+        const svgGroup = svg.append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+        
         function renderScene1() {
-            svg.selectAll("*").remove();
+            svgGroup.selectAll("*").remove();
             const countryCount = Array.from(d3.rollup(data, v => v.length, d => d.birth_country))
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10);
@@ -56,17 +59,17 @@
                 .range([height - margin.top - margin.bottom, 0])
                 .domain([0, d3.max(countryCount, d => d[1])]);
         
-            svg.append("g")
+            svgGroup.append("g")
                 .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
                 .call(d3.axisBottom(x))
                 .selectAll("text")
                 .attr("transform", "rotate(-45)")
                 .style("text-anchor", "end");
         
-            svg.append("g")
+            svgGroup.append("g")
                 .call(d3.axisLeft(y));
         
-            const bars = svg.selectAll(".bar")
+            const bars = svgGroup.selectAll(".bar")
                 .data(countryCount)
                 .enter().append("rect")
                 .attr("class", "bar")
@@ -78,7 +81,7 @@
             bars.append("title")
                 .text(d => `${d[0]}: ${d[1]}`);
         
-            svg.append("text")
+            svgGroup.append("text")
                 .attr("x", (width - margin.left - margin.right) / 2)
                 .attr("y", -10)
                 .attr("text-anchor", "middle")
@@ -87,7 +90,7 @@
         }
         
         function renderScene2() {
-            svg.selectAll("*").remove();
+            svgGroup.selectAll("*").remove();
             const yearCount = Array.from(d3.rollup(data, v => v.length, d => d.year))
                 .sort((a, b) => a[0] - b[0]);
         
@@ -100,14 +103,14 @@
                 .range([height - margin.top - margin.bottom, 0])
                 .domain([0, d3.max(yearCount, d => d[1])]);
         
-            svg.append("g")
+            svgGroup.append("g")
                 .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
                 .call(d3.axisBottom(x).tickValues(x.domain().filter((d, i) => !(i % 10))));
         
-            svg.append("g")
+            svgGroup.append("g")
                 .call(d3.axisLeft(y));
         
-            const bars = svg.selectAll(".bar")
+            const bars = svgGroup.selectAll(".bar")
                 .data(yearCount)
                 .enter().append("rect")
                 .attr("class", "bar")
@@ -119,7 +122,7 @@
             bars.append("title")
                 .text(d => `${d[0]}: ${d[1]}`);
         
-            svg.append("text")
+            svgGroup.append("text")
                 .attr("x", (width - margin.left - margin.right) / 2)
                 .attr("y", -10)
                 .attr("text-anchor", "middle")
@@ -128,14 +131,14 @@
         }
         
         function renderScene3() {
-            svg.selectAll("*").remove();
+            svgGroup.selectAll("*").remove();
             const categoryCount = Array.from(d3.rollup(data, v => v.length, d => d.category));
         
             const radius = Math.min(width, height) / 2 - margin.top;
             const pie = d3.pie().value(d => d[1]);
             const arc = d3.arc().innerRadius(0).outerRadius(radius);
         
-            const pieGroup = svg.attr("transform", `translate(${width / 2},${height / 2})`);
+            const pieGroup = svgGroup.attr("transform", `translate(${width / 2},${height / 2})`);
         
             const arcs = pieGroup.selectAll(".arc")
                 .data(pie(categoryCount))
@@ -154,7 +157,7 @@
                 .attr("text-anchor", "middle")
                 .text(d => d.data[0]);
         
-            svg.append("text")
+            svgGroup.append("text")
                 .attr("x", 0)
                 .attr("y", -height / 2 + margin.top)
                 .attr("text-anchor", "middle")
