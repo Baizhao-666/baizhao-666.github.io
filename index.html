@@ -26,10 +26,6 @@
         const x = d3.scaleTime().range([0, width - margin.left - margin.right]);
         const y = d3.scaleLinear().range([height - margin.top - margin.bottom, 0]);
         
-        const line = d3.line()
-            .x(d => x(d.date))
-            .y(d => y(d.value));
-        
         const scenes = [
             { id: "scene1", title: "Total Cases", description: "Overview of Total COVID-19 Cases", metric: "total_cases", render: renderScene },
             { id: "scene2", title: "Total Deaths", description: "Overview of Total COVID-19 Deaths", metric: "total_deaths", render: renderScene },
@@ -39,7 +35,7 @@
         let data;
         
         // Load the CSV data from GitHub
-        d3.csv("https://raw.githubusercontent.com/Baizhao-666/baizhao-666.github.io/main/data/owid-covid-data.csv").then(loadedData => {
+        d3.csv("https://raw.githubusercontent.com/yourusername/narrative-visualization/main/owid-covid-data.csv").then(loadedData => {
             data = loadedData;
             processData();
             showScene(currentScene);
@@ -69,10 +65,13 @@
                 .attr("class", "y axis")
                 .call(d3.axisLeft(y));
         
-            svg.append("path")
-                .datum(data)
-                .attr("class", "line")
-                .attr("d", line.y(d => y(d[scene.metric])));
+            svg.selectAll(".dot")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", "dot")
+                .attr("cx", d => x(d.date))
+                .attr("cy", d => y(d[scene.metric]))
+                .attr("r", 3);
         
             svg.append("text")
                 .attr("x", (width - margin.left - margin.right) / 2)
@@ -109,7 +108,6 @@
         
         document.getElementById("nextButton").addEventListener("click", () => showScene(currentScene + 1));
         document.getElementById("prevButton").addEventListener("click", () => showScene(currentScene - 1));
-        
 
     </script>
 </body>
