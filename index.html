@@ -46,7 +46,7 @@
         
         function renderScene1() {
             svgGroup.selectAll("*").remove();
-            const countryCount = Array.from(d3.rollup(data, v => v.length, d => d.birth_country))
+            const countryCount = Array.from(d3.rollup(data, v => v.length, d => d.born_country_code))
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10);
         
