@@ -15,7 +15,7 @@ const scenes = [
 let data;
 
 // Load the CSV data
-d3.csv("/mnt/data/owid-covid-data.csv").then(loadedData => {
+d3.csv("data/owid-covid-data.csv").then(loadedData => {
     data = loadedData;
     processData();
     showScene(currentScene);
