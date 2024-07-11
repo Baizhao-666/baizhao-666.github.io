@@ -67,7 +67,8 @@
                 .attr("x", d => x(d[0]))
                 .attr("y", d => y(d[1]))
                 .attr("width", x.bandwidth())
-                .attr("height", d => height - margin.top - margin.bottom - y(d[1]));
+                .attr("height", d => height - margin.top - margin.bottom - y(d[1]))
+                .attr("fill", "steelblue");
         
             bars.append("title")
                 .text(d => `${d[0]}: ${d[1]}`);
@@ -158,7 +159,8 @@
                 .attr("x", d => x(d[0]))
                 .attr("y", d => y(d[1]))
                 .attr("width", x.bandwidth())
-                .attr("height", d => height - margin.top - margin.bottom - y(d[1]));
+                .attr("height", d => height - margin.top - margin.bottom - y(d[1]))
+                .attr("fill", "steelblue");
         
             bars.append("title")
                 .text(d => `${d[0]}: ${d[1]}`);
