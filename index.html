@@ -14,66 +14,74 @@
     <script>
         const width = 960;
         const height = 500;
-
+        const margin = { top: 20, right: 30, bottom: 30, left: 40 };
+        
         const svg = d3.select("#visualization")
             .append("svg")
             .attr("width", width)
-            .attr("height", height);
-
+            .attr("height", height)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+        
+        const x = d3.scaleTime().range([0, width - margin.left - margin.right]);
+        const y = d3.scaleLinear().range([height - margin.top - margin.bottom, 0]);
+        
+        const line = d3.line()
+            .x(d => x(d.date))
+            .y(d => y(d.value));
+        
         const scenes = [
-            { id: "scene1", title: "Total Cases", description: "Overview of Total COVID-19 Cases", render: renderScene1 },
-            { id: "scene2", title: "Total Deaths", description: "Overview of Total COVID-19 Deaths", render: renderScene2 },
-            { id: "scene3", title: "Total Vaccinations", description: "Overview of Total COVID-19 Vaccinations", render: renderScene3 }
+            { id: "scene1", title: "Total Cases", description: "Overview of Total COVID-19 Cases", metric: "total_cases", render: renderScene },
+            { id: "scene2", title: "Total Deaths", description: "Overview of Total COVID-19 Deaths", metric: "total_deaths", render: renderScene },
+            { id: "scene3", title: "Total Vaccinations", description: "Overview of Total COVID-19 Vaccinations", metric: "total_vaccinations", render: renderScene }
         ];
-
+        
         let data;
-
-        // Load the CSV data
+        
+        // Load the CSV data from GitHub
         d3.csv("https://raw.githubusercontent.com/Baizhao-666/baizhao-666.github.io/main/data/owid-covid-data.csv").then(loadedData => {
             data = loadedData;
             processData();
             showScene(currentScene);
         });
-
+        
         function processData() {
             data.forEach(d => {
+                d.date = new Date(d.date);
                 d.total_cases = +d.total_cases;
                 d.total_deaths = +d.total_deaths;
                 d.total_vaccinations = +d.total_vaccinations;
             });
         }
         
-        function renderScene1() {
+        function renderScene(scene) {
             svg.selectAll("*").remove();
-            const totalCases = d3.sum(data, d => d.total_cases);
-            svg.append("text")
-               .attr("x", width / 2)
-               .attr("y", height / 2)
-               .attr("text-anchor", "middle")
-               .text(`Total COVID-19 Cases: ${totalCases}`);
-            createAnnotation(100, 100, `Total cases: ${totalCases}`);
-        }
         
-        function renderScene2() {
-            svg.selectAll("*").remove();
-            const totalDeaths = d3.sum(data, d => d.total_deaths);
-            svg.append("text")
-               .attr("x", width / 2)
-               .attr("y", height / 2)
-               .attr("text-anchor", "middle")
-               .text(`Total COVID-19 Deaths: ${totalDeaths}`);
-            createAnnotation(100, 100, `Total deaths: ${totalDeaths}`);
-        }
+            x.domain(d3.extent(data, d => d.date));
+            y.domain([0, d3.max(data, d => d[scene.metric])]);
         
-        function renderScene3() {
-            svg.selectAll("*").remove();
-            const totalVaccinations = d3.sum(data, d => d.total_vaccinations);
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
+                .call(d3.axisBottom(x));
+        
+            svg.append("g")
+                .attr("class", "y axis")
+                .call(d3.axisLeft(y));
+        
+            svg.append("path")
+                .datum(data)
+                .attr("class", "line")
+                .attr("d", line.y(d => y(d[scene.metric])));
+        
             svg.append("text")
-               .attr("x", width / 2)
-               .attr("y", height / 2)
-               .attr("text-anchor", "middle")
-               .text(`Total COVID-19 Vaccinations: ${totalVaccinations}`);
-            createAnnotation(100, 100, `Total vaccinations: ${totalVaccinations}`);
+                .attr("x", (width - margin.left - margin.right) / 2)
+                .attr("y", -10)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .text(scene.title);
+        
+            createAnnotation(100, 50, scene.description);
         }
         
         function createAnnotation(x, y, text) {
@@ -89,7 +97,7 @@
         function showScene(index) {
             if (index >= 0 && index < scenes.length) {
                 currentScene = index;
-                scenes[currentScene].render();
+                scenes[currentScene].render(scenes[currentScene]);
                 updateNavigation();
             }
         }
@@ -101,6 +109,7 @@
         
         document.getElementById("nextButton").addEventListener("click", () => showScene(currentScene + 1));
         document.getElementById("prevButton").addEventListener("click", () => showScene(currentScene - 1));
+
     </script>
 </body>
 </html>
