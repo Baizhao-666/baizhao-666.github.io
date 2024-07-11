@@ -16,10 +16,8 @@ button {
     margin: 10px;
 }
 
-.line {
-    fill: none;
-    stroke: steelblue;
-    stroke-width: 2px;
+.bar {
+    fill: steelblue;
 }
 
 .axis text {
@@ -31,4 +29,8 @@ button {
     fill: none;
     stroke: #000;
     shape-rendering: crispEdges;
+}
+
+.arc path {
+    stroke: #fff;
 }
