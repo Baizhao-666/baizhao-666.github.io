@@ -12,7 +12,7 @@
     <button id="prevButton">Previous</button>
     <button id="nextButton">Next</button>
     <script>
-        const width = 960;
+        const width = 1000;
         const height = 600;
         const margin = { top: 50, right: 60, bottom: 100, left: 60 };
         
@@ -56,17 +56,14 @@
         
             svgGroup.append("g")
                 .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
-                .call(d3.axisBottom(x))
-                .selectAll("text")
-                .style("text-anchor", "end");
+                .call(d3.axisBottom(x));
         
             svgGroup.append("g")
                 .call(d3.axisLeft(y));
         
-            const bars = svgGroup.selectAll(".bar")
+            const bars = svgGroup.selectAll("rect")
                 .data(countryCount)
                 .enter().append("rect")
-                .attr("class", "bar")
                 .attr("x", d => x(d[0]))
                 .attr("y", d => y(d[1]))
                 .attr("width", x.bandwidth())
@@ -150,17 +147,14 @@
         
             svgGroup.append("g")
                 .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
-                .call(d3.axisBottom(x))
-                .selectAll("text")
-                .style("text-anchor", "end");
+                .call(d3.axisBottom(x));
         
             svgGroup.append("g")
                 .call(d3.axisLeft(y));
         
-            const bars = svgGroup.selectAll(".bar")
+            const bars = svgGroup.selectAll("rect")
                 .data(categoryCount)
                 .enter().append("rect")
-                .attr("class", "bar")
                 .attr("x", d => x(d[0]))
                 .attr("y", d => y(d[1]))
                 .attr("width", x.bandwidth())
