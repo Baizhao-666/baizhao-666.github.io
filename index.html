@@ -5,19 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Narrative Visualization</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/gh/bumbeishvili/d3-tip-for-v6@4/d3-tip.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bumbeishvili/d3-tip-for-v6@4/d3-tip.min.css">
 </head>
 <body>
-    <div id="visualization"></div>
+    <svg class="visualization"></svg>
     <button id="prevButton">Previous</button>
     <button id="nextButton">Next</button>
     <script>
         const width = 1000;
         const height = 600;
         const margin = { top: 50, right: 60, bottom: 100, left: 60 };
+
         
-        const svg = d3.select("#visualization")
-            .append("svg")
+        const svg = d3.select(".visualization")
             .attr("width", width)
             .attr("height", height)
             .append("g")
@@ -70,8 +72,12 @@
                 .attr("height", d => height - margin.top - margin.bottom - y(d[1]))
                 .attr("fill", "steelblue");
         
-            bars.append("title")
-                .text(d => `${d[0]}: ${d[1]}`);
+            const tip = d3.tip()
+                          .attr("class", "d3-tip")
+                          .html(function(event, d) {return d[0]+":"+d[1];});
+            svgGroup.call(tip);
+            bars.on("mouseenter.tip", tip.show)
+                .on("mouseleave.tip", tip.hide);
         
             svgGroup.append("text")
                 .attr("x", (width - margin.left - margin.right) / 2)
@@ -112,18 +118,20 @@
                 .attr("stroke-width", 1.5)
                 .attr("d", line);
         
-            svgGroup.selectAll(".dot")
+            const scatters = svgGroup.selectAll("circle")
                 .data(yearCount)
                 .enter().append("circle")
-                .attr("class", "dot")
                 .attr("cx", d => x(d[0]) + x.bandwidth() / 2)
                 .attr("cy", d => y(d[1]))
                 .attr("r", 3)
                 .attr("fill", "steelblue");
         
-            svgGroup.selectAll(".dot")
-                .append("title")
-                .text(d => `${d[0]}: ${d[1]}`);
+            const tip = d3.tip()
+                          .attr("class", "d3-tip")
+                          .html(function(event, d) {return d[0]+":"+d[1];});
+            svgGroup.call(tip);
+            scatters.on("mouseenter.tip", tip.show)
+                .on("mouseleave.tip", tip.hide);
         
             svgGroup.append("text")
                 .attr("x", (width - margin.left - margin.right) / 2)
@@ -162,8 +170,12 @@
                 .attr("height", d => height - margin.top - margin.bottom - y(d[1]))
                 .attr("fill", "steelblue");
         
-            bars.append("title")
-                .text(d => `${d[0]}: ${d[1]}`);
+            const tip = d3.tip()
+                          .attr("class", "d3-tip")
+                          .html(function(event, d) {return d[0]+":"+d[1];});
+            svgGroup.call(tip);
+            bars.on("mouseenter.tip", tip.show)
+                .on("mouseleave.tip", tip.hide);
         
             svgGroup.append("text")
                 .attr("x", (width - margin.left - margin.right) / 2)
