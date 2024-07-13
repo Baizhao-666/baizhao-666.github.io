@@ -1,207 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Narrative Visualization</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/bumbeishvili/d3-tip-for-v6@4/d3-tip.min.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+  </head>
 
-     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bumbeishvili/d3-tip-for-v6@4/d3-tip.min.css">
-</head>
-<body style="font-family: Arial, sans-serif; text-align: center;">
-    <svg class="visualization"></svg>
-    <button id="prevButton" style="display: inline-block; margin-left: auto; margin-right: auto;">Previous</button>
-    <button id="nextButton"  style="display: inline-block; margin-left: auto; margin-right: auto;">Next</button>
+  <style>
+    div.tooltip {
+      position: absolute;
+      display: none;
+      width: auto;
+      height: auto;
+      background: none repeat scroll 0 0 white;
+      border: 0 none;
+      border-radius: 8px 8px 8px 8px;
+      box-shadow: -3px 3px 15px #888888;
+      color: black;
+      font: 12px sans-serif;
+      padding: 5px;
+      text-align: center;
+    }
+
+  </style>
+
+  <body>
+    <button id="prevButton">Previous</button>
+    <button id="nextButton">Next</button>
+    <div id="countrySelector" style="display:none;">
+      <label for="country">Select Country:</label>
+      <select id="country"></select>
+    </div>
     <script>
-        const width = 1000;
-        const height = 600;
-        const margin = { top: 50, right: 60, bottom: 100, left: 60 };
+      const margin = {
+        top: 50,
+        right: 50,
+        bottom: 50,
+        left: 50
+      };
+      const width = 650;
+      const height = 500;
 
-        
-        const svg = d3.select(".visualization")
-            .attr("width", width)
-            .attr("height", height)
-            .append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
-        
-        const scenes = [
-            { id: "scene1", title: "Top 10 Countries with Nobel Prize Winners", render: renderScene1 },
-            { id: "scene2", title: "Nobel Prize Winners Per Year (1901-2019)", render: renderScene2 },
-            { id: "scene3", title: "Categories of Nobel Prize", render: renderScene3 }
-        ];
-        
-        let data;
-        
-        d3.csv("https://raw.githubusercontent.com/Baizhao-666/baizhao-666.github.io/main/nobel_final.csv").then(loadedData => {
-            data = loadedData;
-            showScene(currentScene);
-        });
-        
-        const svgGroup = svg.append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
-        
-        function renderScene1() {
-            svgGroup.selectAll("*").remove();
-            const countryCount = Array.from(d3.rollup(data, v => v.length, d => d.born_country_code))
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 10);
-        
-            const x = d3.scaleBand()
-                .range([0, width - margin.left - margin.right])
-                .padding(0.1)
-                .domain(countryCount.map(d => d[0]));
-        
-            const y = d3.scaleLinear()
-                .range([height - margin.top - margin.bottom, 0])
-                .domain([0, d3.max(countryCount, d => d[1])]);
-        
-            svgGroup.append("g")
-                .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
-                .call(d3.axisBottom(x));
-        
-            svgGroup.append("g")
-                .call(d3.axisLeft(y));
-        
-            const bars = svgGroup.selectAll("rect")
-                .data(countryCount)
-                .enter().append("rect")
-                .attr("x", d => x(d[0]))
-                .attr("y", d => y(d[1]))
-                .attr("width", x.bandwidth())
-                .attr("height", d => height - margin.top - margin.bottom - y(d[1]))
-                .attr("fill", "steelblue");
-        
-            const tip = d3.tip()
-                          .attr("class", "d3-tip")
-                          .html(function(event, d) {return d[0]+":"+d[1];});
-            svgGroup.call(tip);
-            bars.on("mouseenter.tip", tip.show)
-                .on("mouseleave.tip", tip.hide);
-        
-            svgGroup.append("text")
-                .attr("x", (width - margin.left - margin.right) / 2)
-                .attr("y", -50)
-                .attr("text-anchor", "middle")
-                .style("font-size", "16px")
-                .text("Top 10 Countries with Nobel Prize Winners");
+      const svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom);
+
+      const svgGroup = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      const scenes = [{
+          render: renderScene1
+        },
+        {
+          render: renderScene2
+        },
+        {
+          render: renderScene3
         }
-        
-        function renderScene2() {
-            svgGroup.selectAll("*").remove();
-            const yearCount = Array.from(d3.rollup(data, v => v.length, d => d.year))
-                .sort((a, b) => a[0] - b[0]);
-        
-            const x = d3.scaleBand()
-                .range([0, width - margin.left - margin.right])
-                .domain(yearCount.map(d => d[0]));
-        
-            const y = d3.scaleLinear()
-                .range([height - margin.top - margin.bottom, 0])
-                .domain([0, d3.max(yearCount, d => d[1])]);
-        
-            svgGroup.append("g")
-                .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
-                .call(d3.axisBottom(x).tickValues(x.domain().filter((d, i) => !(i % 10))));
-        
-            svgGroup.append("g")
-                .call(d3.axisLeft(y));
-        
-            const line = d3.line()
-                .x(d => x(d[0]) + x.bandwidth() / 2)
-                .y(d => y(d[1]));
-        
-            svgGroup.append("path")
-                .datum(yearCount)
-                .attr("fill", "none")
-                .attr("stroke", "steelblue")
-                .attr("stroke-width", 1.5)
-                .attr("d", line);
-        
-            const scatters = svgGroup.selectAll("circle")
-                .data(yearCount)
-                .enter().append("circle")
-                .attr("cx", d => x(d[0]) + x.bandwidth() / 2)
-                .attr("cy", d => y(d[1]))
-                .attr("r", 3)
-                .attr("fill", "steelblue");
-        
-            const tip = d3.tip()
-                          .attr("class", "d3-tip")
-                          .html(function(event, d) {return d[0]+":"+d[1];});
-            svgGroup.call(tip);
-            scatters.on("mouseenter.tip", tip.show)
-                .on("mouseleave.tip", tip.hide);
-        
-            svgGroup.append("text")
-                .attr("x", (width - margin.left - margin.right) / 2)
-                .attr("y", -50)
-                .attr("text-anchor", "middle")
-                .style("font-size", "16px")
-                .text("Nobel Prize Winners Per Year");
+      ];
+
+      const countries = {
+        "US": "America",
+        "GB": "England",
+        "DE": "Germany",
+        "FR": "France",
+        "SE": "Sweden"
+      };
+
+      let data;
+      let topCountries = [];
+      let currentScene = 0;
+      
+      const div = d3.select("body").append("div")
+          .attr("class", "tooltip")
+          .style("opacity", 1);
+
+      d3.csv("https://raw.githubusercontent.com/Baizhao-666/baizhao-666.github.io/main/nobel_final.csv").then(rawData => {
+        data = rawData;
+        const countryCount = Array.from(d3.rollup(data, v => v.length, d => d.born_country_code))
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5);
+
+        topCountries = countryCount.map(d => d[0]);
+        d3.select("#country")
+          .selectAll("option")
+          .data(topCountries)
+          .enter()
+          .append("option")
+          .text(d => countries[d])
+          .attr("value", d => d);
+
+        showScene(0);
+      });
+
+      function renderScene1() {
+        d3.select("#countrySelector").style("display", "none");
+        svgGroup.selectAll("*").remove();
+        const countryCount = Array.from(d3.rollup(data, v => v.length, d => d.born_country_code))
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5);
+
+        const x = d3.scaleBand()
+          .range([0, width])
+          .padding(0.1)
+          .domain(countryCount.map(d => d[0]));
+
+        const y = d3.scaleLinear()
+          .range([height, 0])
+          .domain([0, d3.max(countryCount, d => d[1])]);
+
+        svgGroup.append("g")
+          .attr("transform", `translate(0,${height})`)
+          .call(d3.axisBottom(x).tickFormat(d => countries[d] || d));
+
+        svgGroup.append("g")
+          .call(d3.axisLeft(y));
+
+        const bars = svgGroup.selectAll("rect")
+          .data(countryCount)
+          .enter().append("rect")
+          .on("mousemove", function(event, d) {
+            div.style("opacity", 1);
+            div.html(countries[d[0]] + ":" + d[1])
+              .style("left", (event.pageX + 10) + "px")
+              .style("top", (event.pageY - 25) + "px")
+              .style("display", "inline-block");
+          })
+          .on("mouseout", function(d) {
+            div.style("opacity", 0);
+          })
+          .attr("x", d => x(d[0]))
+          .attr("y", d => y(0))
+          .attr("width", x.bandwidth())
+          .attr("height", 0)
+          .transition()
+          .duration(1500)
+          .attr("y", d => y(d[1]))
+          .attr("height", d => height - y(d[1]))
+          .attr("fill", "steelblue");
+
+
+
+        svgGroup.append("text")
+          .attr("x", width / 2)
+          .attr("y", -20)
+          .attr("text-anchor", "middle")
+          .style("font-size", "16px")
+          .text("Top 5 Countries with Nobel Prize Winners");
+      }
+
+      function renderScene2() {
+        d3.select("#countrySelector").style("display", "block");
+        svgGroup.selectAll("*").remove();
+
+        const selectedCountry = d3.select("#country").property("value");
+        const countryData = data.filter(d => d.born_country_code === selectedCountry);
+        const yearCount = Array.from(d3.rollup(countryData, v => v.length, d => d.year))
+          .sort((a, b) => a[0] - b[0]);
+
+        const x = d3.scaleLinear()
+          .range([0, width])
+          .domain(d3.extent(yearCount, d => d[0]));
+
+        const y = d3.scaleLinear()
+          .range([height, 0])
+          .domain([0, 9]);
+
+        svgGroup.append("g")
+          .attr("transform", `translate(0,${height})`)
+          .call(d3.axisBottom(x).tickFormat(d3.format("d")));
+
+        svgGroup.append("g")
+          .call(d3.axisLeft(y));
+
+        const line = d3.line()
+          .x(d => x(d[0]))
+          .y(d => y(d[1]));
+
+        const path = svgGroup.append("path")
+          .datum(yearCount)
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr("d", line);
+
+        const totalLength = path.node().getTotalLength();
+
+        path
+          .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
+          .attr("stroke-dashoffset", totalLength)
+          .transition()
+          .duration(2000)
+          .ease(d3.easeLinear)
+          .attr("stroke-dashoffset", 0);
+
+        const scatters = svgGroup.selectAll("circle")
+          .data(yearCount)
+          .enter().append("circle")
+          .attr("cx", d => x(d[0]))
+          .attr("cy", d => y(d[1]))
+          .attr("r", 3)
+          .style("fill", "steelblue");
+
+        scatters.on("mouseover", function(event, d) {
+            div.style("opacity", 1);
+            div.html(d[0] + ":" + d[1])
+              .style("left", (event.pageX + 10) + "px")
+              .style("top", (event.pageY - 25) + "px")
+              .style("display", "inline-block");
+          })
+          .on("mouseout", function(d) {
+            div.style("opacity", 0);
+          });
+
+        svgGroup.append("text")
+          .attr("x", width / 2)
+          .attr("y", -10)
+          .attr("text-anchor", "middle")
+          .style("font-size", "16px")
+          .text(`Nobel Prize Winners per Year in ${countries[selectedCountry]}`);
+      }
+
+      function renderScene3() {
+        d3.select("#countrySelector").style("display", "block");
+        svgGroup.selectAll("*").remove();
+
+        const selectedCountry = d3.select("#country").property("value");
+        const countryData = data.filter(d => d.born_country_code === selectedCountry);
+        const categoryCount = Array.from(d3.rollup(countryData, v => v.length, d => d.category));
+
+        const x = d3.scaleBand()
+          .range([0, width])
+          .padding(0.1)
+          .domain(categoryCount.map(d => d[0]));
+
+        const y = d3.scaleLinear()
+          .range([height, 0])
+          .domain([0, 80]);
+
+        svgGroup.append("g")
+          .attr("transform", `translate(0,${height})`)
+          .call(d3.axisBottom(x));
+
+        svgGroup.append("g")
+          .call(d3.axisLeft(y));
+
+        const bars = svgGroup.selectAll("rect")
+          .data(categoryCount)
+          .enter().append("rect")
+          .on("mousemove", function(event, d) {
+            div.style("opacity", 1);
+            div.html(d[0] + ":" + d[1])
+              .style("left", (event.pageX + 10) + "px")
+              .style("top", (event.pageY - 25) + "px")
+              .style("display", "inline-block");
+          })
+          .on("mouseout", function(d) {
+            div.style("opacity", 0);
+          })
+          .attr("x", d => x(d[0]))
+          .attr("y", d => y(0))
+          .attr("width", x.bandwidth())
+          .attr("height", 0)
+          .transition()
+          .duration(1500)
+          .attr("y", d => y(d[1]))
+          .attr("height", d => height - y(d[1]))
+          .attr("fill", "steelblue");
+
+
+        svgGroup.append("text")
+          .attr("x", width / 2)
+          .attr("y", -10)
+          .attr("text-anchor", "middle")
+          .style("font-size", "16px")
+          .text(`Nobel Prize Winners in Each Category for ${countries[selectedCountry]}`);
+      }
+
+      function showScene(sceneIndex) {
+        currentScene = sceneIndex;
+        scenes[sceneIndex].render();
+        updateNavigation();
+      }
+
+      function updateNavigation() {
+        document.getElementById("prevButton").disabled = (currentScene === 0);
+        document.getElementById("nextButton").disabled = (currentScene === scenes.length - 1)
+      }
+
+      document.getElementById("prevButton").addEventListener("click", () => {
+        if (currentScene > 0) {
+          showScene(currentScene - 1);
         }
-        
-        function renderScene3() {
-            svgGroup.selectAll("*").remove();
-            const categoryCount = Array.from(d3.rollup(data, v => v.length, d => d.category));
-        
-            const x = d3.scaleBand()
-                .range([0, width - margin.left - margin.right])
-                .padding(0.1)
-                .domain(categoryCount.map(d => d[0]));
-        
-            const y = d3.scaleLinear()
-                .range([height - margin.top - margin.bottom, 0])
-                .domain([0, d3.max(categoryCount, d => d[1])]);
-        
-            svgGroup.append("g")
-                .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
-                .call(d3.axisBottom(x));
-        
-            svgGroup.append("g")
-                .call(d3.axisLeft(y));
-        
-            const bars = svgGroup.selectAll("rect")
-                .data(categoryCount)
-                .enter().append("rect")
-                .attr("x", d => x(d[0]))
-                .attr("y", d => y(d[1]))
-                .attr("width", x.bandwidth())
-                .attr("height", d => height - margin.top - margin.bottom - y(d[1]))
-                .attr("fill", "steelblue");
-        
-            const tip = d3.tip()
-                          .attr("class", "d3-tip")
-                          .html(function(event, d) {return d[0]+":"+d[1];});
-            svgGroup.call(tip);
-            bars.on("mouseenter.tip", tip.show)
-                .on("mouseleave.tip", tip.hide);
-        
-            svgGroup.append("text")
-                .attr("x", (width - margin.left - margin.right) / 2)
-                .attr("y", -50)
-                .attr("text-anchor", "middle")
-                .style("font-size", "16px")
-                .text("Categories of Nobel Prize");
+      });
+
+      document.getElementById("nextButton").addEventListener("click", () => {
+        if (currentScene < scenes.length - 1) {
+          showScene(currentScene + 1);
         }
-        
-        let currentScene = 0;
-        
-        function showScene(index) {
-            if (index >= 0 && index < scenes.length) {
-                currentScene = index;
-                scenes[currentScene].render();
-                updateNavigation();
-            }
-        }
-        
-        function updateNavigation() {
-            document.getElementById("prevButton").disabled = (currentScene === 0);
-            document.getElementById("nextButton").disabled = (currentScene === scenes.length - 1);
-        }
-        
-        document.getElementById("nextButton").addEventListener("click", () => showScene(currentScene + 1));
-        document.getElementById("prevButton").addEventListener("click", () => showScene(currentScene - 1));
+      });
+
+      d3.select("#country").on("change", () => {
+        scenes[currentScene].render();
+      });
+
     </script>
-</body>
+  </body>
+
 </html>
