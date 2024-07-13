@@ -34,23 +34,23 @@
       <select id="country"></select>
     </div>
     <script>
-      const margin = {
+      var margin = {
         top: 50,
         right: 50,
         bottom: 50,
         left: 50
       };
-      const width = 650;
-      const height = 500;
+      var width = 650;
+      var height = 500;
 
-      const svg = d3.select("body").append("svg")
+      var svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom);
 
-      const svgGroup = svg.append("g")
+      var svgGroup = svg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-      const scenes = [{
+      var scenes = [{
           render: renderScene1
         },
         {
@@ -61,7 +61,7 @@
         }
       ];
 
-      const countries = {
+      var countries = {
         "US": "America",
         "GB": "England",
         "DE": "Germany",
@@ -72,14 +72,14 @@
       let data;
       let topCountries = [];
       let currentScene = 0;
-      
-      const div = d3.select("body").append("div")
-          .attr("class", "tooltip")
-          .style("opacity", 1);
+
+      var div = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 1);
 
       d3.csv("https://raw.githubusercontent.com/Baizhao-666/baizhao-666.github.io/main/nobel_final.csv").then(rawData => {
         data = rawData;
-        const countryCount = Array.from(d3.rollup(data, v => v.length, d => d.born_country_code))
+        var countryCount = Array.from(d3.rollup(data, v => v.length, d => d.born_country_code))
           .sort((a, b) => b[1] - a[1])
           .slice(0, 5);
 
@@ -98,16 +98,16 @@
       function renderScene1() {
         d3.select("#countrySelector").style("display", "none");
         svgGroup.selectAll("*").remove();
-        const countryCount = Array.from(d3.rollup(data, v => v.length, d => d.born_country_code))
+        var countryCount = Array.from(d3.rollup(data, v => v.length, d => d.born_country_code))
           .sort((a, b) => b[1] - a[1])
           .slice(0, 5);
 
-        const x = d3.scaleBand()
+        var x = d3.scaleBand()
           .range([0, width])
           .padding(0.1)
           .domain(countryCount.map(d => d[0]));
 
-        const y = d3.scaleLinear()
+        var y = d3.scaleLinear()
           .range([height, 0])
           .domain([0, d3.max(countryCount, d => d[1])]);
 
@@ -118,7 +118,7 @@
         svgGroup.append("g")
           .call(d3.axisLeft(y));
 
-        const bars = svgGroup.selectAll("rect")
+        var bars = svgGroup.selectAll("rect")
           .data(countryCount)
           .enter().append("rect")
           .on("mousemove", function(event, d) {
@@ -155,16 +155,16 @@
         d3.select("#countrySelector").style("display", "block");
         svgGroup.selectAll("*").remove();
 
-        const selectedCountry = d3.select("#country").property("value");
-        const countryData = data.filter(d => d.born_country_code === selectedCountry);
-        const yearCount = Array.from(d3.rollup(countryData, v => v.length, d => d.year))
+        var selectedCountry = d3.select("#country").property("value");
+        var countryData = data.filter(d => d.born_country_code === selectedCountry);
+        var yearCount = Array.from(d3.rollup(countryData, v => v.length, d => d.year))
           .sort((a, b) => a[0] - b[0]);
 
-        const x = d3.scaleLinear()
+        var x = d3.scaleLinear()
           .range([0, width])
           .domain(d3.extent(yearCount, d => d[0]));
 
-        const y = d3.scaleLinear()
+        var y = d3.scaleLinear()
           .range([height, 0])
           .domain([0, 9]);
 
@@ -175,28 +175,28 @@
         svgGroup.append("g")
           .call(d3.axisLeft(y));
 
-        const line = d3.line()
+        var line = d3.line()
           .x(d => x(d[0]))
           .y(d => y(d[1]));
 
-        const path = svgGroup.append("path")
+        var path = svgGroup.append("path")
           .datum(yearCount)
           .attr("fill", "none")
           .attr("stroke", "steelblue")
           .attr("stroke-width", 1.5)
           .attr("d", line);
 
-        const totalLength = path.node().getTotalLength();
+        var totalLength = path.node().getTotalLength();
 
         path
           .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
           .attr("stroke-dashoffset", totalLength)
           .transition()
-          .duration(2000)
+          .duration(1000)
           .ease(d3.easeLinear)
           .attr("stroke-dashoffset", 0);
 
-        const scatters = svgGroup.selectAll("circle")
+        var scatters = svgGroup.selectAll("circle")
           .data(yearCount)
           .enter().append("circle")
           .attr("cx", d => x(d[0]))
@@ -227,16 +227,16 @@
         d3.select("#countrySelector").style("display", "block");
         svgGroup.selectAll("*").remove();
 
-        const selectedCountry = d3.select("#country").property("value");
-        const countryData = data.filter(d => d.born_country_code === selectedCountry);
-        const categoryCount = Array.from(d3.rollup(countryData, v => v.length, d => d.category));
+        var selectedCountry = d3.select("#country").property("value");
+        var countryData = data.filter(d => d.born_country_code === selectedCountry);
+        var categoryCount = Array.from(d3.rollup(countryData, v => v.length, d => d.category));
 
-        const x = d3.scaleBand()
+        var x = d3.scaleBand()
           .range([0, width])
           .padding(0.1)
           .domain(categoryCount.map(d => d[0]));
 
-        const y = d3.scaleLinear()
+        var y = d3.scaleLinear()
           .range([height, 0])
           .domain([0, 80]);
 
@@ -247,7 +247,7 @@
         svgGroup.append("g")
           .call(d3.axisLeft(y));
 
-        const bars = svgGroup.selectAll("rect")
+        var bars = svgGroup.selectAll("rect")
           .data(categoryCount)
           .enter().append("rect")
           .on("mousemove", function(event, d) {
