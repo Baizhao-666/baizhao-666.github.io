@@ -157,8 +157,9 @@
           },
           x: x(countryCount[0][0]) + x.bandwidth() / 2,
           y: y(countryCount[0][1]),
-          dy: -5,
-          dx: -10
+          dy: -10,
+          dx: -10,
+          color: "black"
         }];
 
         var makeAnnotations = d3.annotation()
@@ -250,7 +251,8 @@
           x: x(maxYear[0]),
           y: y(maxYear[1]),
           dy: -20,
-          dx: -10
+          dx: -10,
+          color: "black"
         }];
 
         var makeAnnotations = d3.annotation()
@@ -312,7 +314,7 @@
 
         svgGroup.append("text")
           .attr("x", width / 2)
-          .attr("y", -40)
+          .attr("y", -60)
           .attr("text-anchor", "middle")
           .style("font-size", "16px")
           .text(`Nobel Prize Winners in Each Category for ${countries[selectedCountry]}`);
@@ -324,8 +326,9 @@
           },
           x: x(maxCat[0]) + x.bandwidth() / 2,
           y: y(maxCat[1]),
-          dy: -20,
-          dx: -10
+          dy: -10,
+          dx: -10,
+          color: "black"
         }];
 
         var makeAnnotations = d3.annotation()
