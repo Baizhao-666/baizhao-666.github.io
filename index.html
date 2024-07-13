@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Narrative Visualization</title>
     <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.5.1/d3-annotation.min.js"></script>
   </head>
 
   <style>
@@ -35,7 +36,7 @@
     </div>
     <script>
       var margin = {
-        top: 50,
+        top: 100,
         right: 50,
         bottom: 50,
         left: 50
@@ -142,13 +143,31 @@
           .attr("fill", "steelblue");
 
 
-
         svgGroup.append("text")
           .attr("x", width / 2)
           .attr("y", -20)
           .attr("text-anchor", "middle")
           .style("font-size", "16px")
           .text("Top 5 Countries with Nobel Prize Winners");
+
+
+        var annotations = [{
+          note: {
+            label: `${countries[countryCount[0][0]]} has total ${countryCount[0][1]} Nobel Prize winners`
+          },
+          x: x(countryCount[0][0]) + x.bandwidth() / 2,
+          y: y(countryCount[0][1]),
+          dy: -5,
+          dx: -10
+        }];
+
+        var makeAnnotations = d3.annotation()
+          .type(d3.annotationLabel)
+          .annotations(annotations);
+
+        svgGroup.append("g")
+          .attr("class", "annotation-group")
+          .call(makeAnnotations);
       }
 
       function renderScene2() {
@@ -162,7 +181,7 @@
 
         var x = d3.scaleLinear()
           .range([0, width])
-          .domain(d3.extent(yearCount, d => d[0]));
+          .domain([1900, 2020]);
 
         var y = d3.scaleLinear()
           .range([height, 0])
@@ -221,6 +240,26 @@
           .attr("text-anchor", "middle")
           .style("font-size", "16px")
           .text(`Nobel Prize Winners per Year in ${countries[selectedCountry]}`);
+
+
+        var maxYear = yearCount.reduce((max, d) => d[1] >= max[1] ? d : max, yearCount[0]);
+        var annotations = [{
+          note: {
+            label: `${maxYear[0]} with ${maxYear[1]} winners`
+          },
+          x: x(maxYear[0]),
+          y: y(maxYear[1]),
+          dy: -20,
+          dx: -10
+        }];
+
+        var makeAnnotations = d3.annotation()
+          .type(d3.annotationLabel)
+          .annotations(annotations);
+
+        svgGroup.append("g")
+          .attr("class", "annotation-group")
+          .call(makeAnnotations);
       }
 
       function renderScene3() {
@@ -273,10 +312,29 @@
 
         svgGroup.append("text")
           .attr("x", width / 2)
-          .attr("y", -10)
+          .attr("y", -40)
           .attr("text-anchor", "middle")
           .style("font-size", "16px")
           .text(`Nobel Prize Winners in Each Category for ${countries[selectedCountry]}`);
+        var maxCat = categoryCount.reduce((max, d) => d[1] >= max[1] ? d : max, categoryCount[0]);
+
+        var annotations = [{
+          note: {
+            label: `${maxCat[0]} with ${maxCat[1]} winners`
+          },
+          x: x(maxCat[0]) + x.bandwidth() / 2,
+          y: y(maxCat[1]),
+          dy: -20,
+          dx: -10
+        }];
+
+        var makeAnnotations = d3.annotation()
+          .type(d3.annotationLabel)
+          .annotations(annotations);
+
+        svgGroup.append("g")
+          .attr("class", "annotation-group")
+          .call(makeAnnotations);
       }
 
       function showScene(sceneIndex) {
